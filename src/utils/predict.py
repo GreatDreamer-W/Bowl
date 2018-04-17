@@ -16,7 +16,7 @@ def predict():
     # Directory to save logs and trained model
     MODEL_DIR = os.path.join(ROOT_DIR, "logs")
 
-    base_path = "stage1_test"
+    base_path = "stage2_test_final"
 
     # Training dataset
     dataset_train = BowlDataset()

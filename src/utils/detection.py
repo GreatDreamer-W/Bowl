@@ -1,4 +1,5 @@
 import os
+import random
 import re
 from glob import glob
 
@@ -6,6 +7,7 @@ import cv2
 from matplotlib import pyplot as plt
 
 import src.mask_rcnn.model as modellib
+from src.mask_rcnn.model import log
 from src.mask_rcnn.bowl_dataset import BowlDataset
 from src.mask_rcnn import visualize
 from src.mask_rcnn.inference_config import inference_config
@@ -54,8 +56,24 @@ def get_ax(rows=1, cols=1, size=8):
     return ax
 
 
+# # Test on a random image
+# image_id = random.choice(dataset_val.image_ids)
+# original_image, image_meta, gt_class_id, gt_bbox, gt_mask =\
+#     modellib.load_image_gt(dataset_val, inference_config,
+#                            image_id, use_mini_mask=False)
+#
+# log("original_image", original_image)
+# log("image_meta", image_meta)
+# log("gt_class_id", gt_class_id)
+# log("gt_bbox", gt_bbox)
+# log("gt_mask", gt_mask)
+#
+# visualize.display_instances(original_image, gt_bbox, gt_mask, gt_class_id,
+#                             dataset_train.class_names, figsize=(8, 8))
+
+
 # Test all images
-base_path = "stage1_test"
+base_path = "test100"
 masks = dict()
 id_extractor = re.compile(".*\\\\" + base_path +
                           "\\\\(?P<image_id>.*)" +

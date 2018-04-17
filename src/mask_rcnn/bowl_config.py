@@ -30,11 +30,11 @@ class BowlConfig(Config):
     # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.
     TRAIN_ROIS_PER_IMAGE = 400
 
-    STEPS_PER_EPOCH = 500
+    STEPS_PER_EPOCH = 600
 
     VALIDATION_STEPS = 50
 
-    RESNET_ARCHITECTURE = "resnet101"
+    BACKBONE = "resnet101"
 
     # Learning rate and momentum
     # The Mask RCNN paper uses lr=0.02, but on TensorFlow it causes

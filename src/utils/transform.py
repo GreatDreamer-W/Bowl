@@ -178,8 +178,25 @@ def do_inv_speckle_noise(image, sigma=0.5):
 
 # geometric
 def relabel_mask(masks):
-    for i in range(masks.shape[2]):
-        mask = masks[:, :, i]
+    try:
+        for i in range(masks.shape[2]):
+            mask = masks[:, :, i]
+            data = mask[:, :, np.newaxis]
+            unique_color = set(tuple(v) for m in data for v in m)
+
+            H, W = data.shape[:2]
+            mask = np.zeros((H, W), np.int32)
+            for color in unique_color:
+                # print(color)
+                if color == (0,): continue
+
+                m = (data == color).all(axis=2)
+                label = measure.label(m)
+
+                index = [label != 0]
+                mask[index] = label[index] + mask.max()
+    except IndexError:
+        mask = masks[:, :]
         data = mask[:, :, np.newaxis]
         unique_color = set(tuple(v) for m in data for v in m)
 
@@ -194,6 +211,7 @@ def relabel_mask(masks):
 
             index = [label != 0]
             mask[index] = label[index] + mask.max()
+
     return masks
 
 
@@ -237,7 +255,8 @@ def do_flip_transpose2(image, masks, type=0):
         image = image.transpose(1, 0, 2)
         image = cv2.flip(image, 1)
 
-        masks = masks.transpose(1, 0, 2)
+        try: masks = masks.transpose(1, 0, 2)
+        except ValueError: masks = masks.transpose(1, 0)
         masks = cv2.flip(masks, 1)
 
     if type == 2:  # rotate180
@@ -248,7 +267,8 @@ def do_flip_transpose2(image, masks, type=0):
         image = image.transpose(1, 0, 2)
         image = cv2.flip(image, 0)
 
-        masks = masks.transpose(1, 0, 2)
+        try: masks = masks.transpose(1, 0, 2)
+        except ValueError: masks = masks.transpose(1, 0)
         masks = cv2.flip(masks, 0)
 
     if type == 4:  # flip left-right
@@ -265,7 +285,8 @@ def do_flip_transpose2(image, masks, type=0):
         image = cv2.flip(image, 1)
 
         masks = cv2.flip(masks, 1)
-        masks = masks.transpose(1, 0, 2)
+        try: masks = masks.transpose(1, 0, 2)
+        except ValueError: masks = masks.transpose(1, 0)
         masks = cv2.flip(masks, 1)
 
     if type == 7:
@@ -274,7 +295,8 @@ def do_flip_transpose2(image, masks, type=0):
         image = cv2.flip(image, 1)
 
         masks = cv2.flip(masks, 0)
-        masks = masks.transpose(1, 0, 2)
+        try: masks = masks.transpose(1, 0, 2)
+        except ValueError: masks = masks.transpose(1, 0)
         masks = cv2.flip(masks, 1)
 
     return image, masks

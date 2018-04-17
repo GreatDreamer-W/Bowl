@@ -1,16 +1,16 @@
 import os
 import random
-
+import numpy as np
 import cv2
 
 from src.utils.utils import get_images, get_masks
 from src.utils.transform import random_transform, do_color_shift, \
     do_hue_shift, do_saturation_shift, do_decolor, do_custom_process1, do_gamma, \
     do_unsharp, do_inv_speckle_noise, random_transform2, \
-    do_elastic_transform2, random_crop_transform2, do_flip_transpose2
+    do_elastic_transform2, random_crop_transform2, do_flip_transpose2, \
+    do_shift_scale_rotate2
 
-
-WIDTH, HEIGHT = 256, 256
+WIDTH, HEIGHT = 200, 200
 
 
 def train_augment(base_path, num):
@@ -18,6 +18,7 @@ def train_augment(base_path, num):
     masks = get_masks(base_path)
     for i in range(num):
         for image_id, image in images.items():
+            print(image_id)
             image_masks = masks[image_id]
             aug_image, aug_masks = augment(image, image_masks)
             save_augment(aug_image, aug_masks, image_id, i)
@@ -41,9 +42,15 @@ def save_augment(aug_image, aug_masks, image_id, i):
     # 存储增强后的掩码
     if not os.path.exists(os.path.join(images_dir, "masks")):
         os.mkdir(os.path.join(images_dir, "masks"))
-    for j in range(aug_masks.shape[2]):
-        cv2.imwrite(os.path.join(images_dir, "masks", "augment_" + str(i) +
-                                 "_" + str(j) + ".png"), aug_masks[:, :, j])
+    try:
+        for j in range(aug_masks.shape[2]):
+            if np.sum(aug_masks[:, :, j]) > 0:
+                cv2.imwrite(os.path.join(images_dir, "masks", "augment_" + str(i) +
+                                         "_" + str(j) + ".png"), aug_masks[:, :, j])
+    except IndexError:
+        if np.sum(aug_masks[:, :]) > 0:
+            cv2.imwrite(os.path.join(images_dir, "masks", "augment_" + str(i) +
+                                     "_" + str(0) + ".png"), aug_masks[:, :])
 
 
 def augment(image, masks):
@@ -100,10 +107,10 @@ def augment(image, masks):
 
     # geometric
     if 1:
-        # image, masks = random_transform2(image, masks, u=0.5,
-        #                                 func=do_shift_scale_rotate2,
-        #                                 dx=[0, 0], dy=[0, 0], scale=[1/2, 2],
-        #                                 angle=[-45, 45])
+        image, masks = random_transform2(image, masks, u=0.5,
+                                         func=do_shift_scale_rotate2,
+                                         dx=[0, 0], dy=[0, 0], scale=[1/2, 2],
+                                         angle=[-45, 45])
         image, masks = random_transform2(image, masks, u=0.5,
                                          func=do_elastic_transform2,
                                          grid=[8, 64],
@@ -113,6 +120,3 @@ def augment(image, masks):
         image, masks = do_flip_transpose2(image, masks, random.randint(0, 8))
 
     return image, masks
-
-
-train_augment("stage1_test", 2)
